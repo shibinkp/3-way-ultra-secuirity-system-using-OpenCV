@@ -1,0 +1,78 @@
+import cv2
+import numpy as np
+import datetime
+import serial
+import RPi.GPIO as GPIO
+from time import sleep
+ser = serial.Serial('/dev/ttyS0', 9600)
+GPIO.setwarnings(False)
+#Select GPIO mode
+GPIO.setmode(GPIO.BCM)
+#Set pin 23 as output
+relay=23
+GPIO.setup(relay,GPIO.OUT)
+#recognizer = cv2.face.createLBPHFaceRecognizer()
+#recognizer = cv2.face_LBPHFaceRecognizer.create()
+recognizer=cv2.face.LBPHFaceRecognizer_create();
+recognizer.read('trainner/trainner.yml')
+cascadePath = "haarcascade_frontalface_default.xml"
+faceCascade = cv2.CascadeClassifier(cascadePath);
+#dbx = dropbox.Dropbox('9CnZVpr3KTAAAAAAAAABA0lVPpe61WhVSisHuyO6MGAD0raLJwXZvp1TlaqGUAAAAAAAAAHZoO4B74NWXnTrNnjYevssOklUtLvi8ScYitq2IFmW-j3OfLs_lgmjHwzf')
+#dbx.users_get_current_account()
+cam = cv2.VideoCapture(0)
+font = cv2.FONT_HERSHEY_SIMPLEX
+fontscale = 1
+fontcolor = (255, 255, 255)
+def upload(Id):
+f = open("Test.txt", "w");
+f.write(Id)
+n= datetime.datetime.now()
+f.write("%s"%n)
+f.close()
+f = open("Test.txt", "r");
+contents = f.read()
+#dbx.files_upload(contents,'/folder.txt')
+print (contents)
+print ("%s"%n)
+while True:
+ret, im =cam.read()
+gray=cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+faces=faceCascade.detectMultiScale(gray, 1.2,5)
+for(x,y,w,h) in faces:
+cv2.rectangle(im,(x,y),(x+w,y+h),(225,0,0),2)
+Id, conf = recognizer.predict(gray[y:y+h,x:x+w])
+if(conf<50):
+if(Id==1):
+
+Id="Shibin"
+upload(Id)
+cam.release()
+cv2.destroyAllWindows()
+e=input("Password:")
+if(e=="Hallo"):
+print("Place Finger")
+u=ser.read()
+print(u)
+if(u==b'1'):
+GPIO.output(relay,GPIO.HIGH)
+print ("Switched On")
+sleep(2) # Delay in seconds
+GPIO.output(relay,GPIO.LOW)
+else:
+print("Unauthorized")
+else:
+print("Unauthorized")
+if(Id==5):
+
+
+#else:
+print("Unauthorized")
+
+upload(Id)
+#cv2.imwrite("Indruder/In",im)
+cv2.putText(im,str(Id), (x,y+h),font,fontscale,fontcolor)
+cv2.imshow('im',im)
+if cv2.waitKey(10) & 0xFF==ord('q'):
+break
+cam.release()
+cv2.destroyAllWindows()
